@@ -65,7 +65,7 @@ tidy(modelo, conf.int = TRUE, conf.level = 0.95)
 glance(modelo)
 ```
 
-> Regressão múltipla foi utilizada para analisar se prop_paluno, nota_capes e artigos_conf tem uma associação significativa com produtividade. Os resultados da regressão indicam que um modelo com os 3 preditores no formato produtividade = -0,511.prop_paluno + 0,569.nota_capes + 0,002.artigos_conf explicam 57,04% da variância da variável de resposta (R2 = 0,57). VarIndep1, medida como/em [unidade ou o que é o 0 e o que é 1] tem uma relação significativa com o erro (b = [yy,yy; zz,zz], IC com 95%), assim como VarIndep2 medida como [unidade ou o que é o 0 e o que é 1] (b = [yy,yy; zz,zz], IC com 95%). O aumento de 1 unidade de VarIndep1 produz uma mudança de xxx em VarDep, enquanto um aumento...
+> Regressão múltipla foi utilizada para analisar se prop_paluno, nota_capes e artigos_conf tem uma associação significativa com produtividade. Os resultados da regressão indicam que um modelo com os 3 preditores no formato produtividade = -0,511.prop_paluno + 0,569.nota_capes + 0,002.artigos_conf explicam 57,04% da variância da variável de resposta (R2 = 0,57). VarIndep1, medida como/em [unidade ou o que é o 0 e o que é 1] tem uma relação significativa com o VarDep (b = [yy,yy; zz,zz], IC com 95%), assim como VarIndep2 medida como [unidade ou o que é o 0 e o que é 1] (b = [yy,yy; zz,zz], IC com 95%). O aumento de 1 unidade de VarIndep1 produz uma mudança de xxx em VarDep, enquanto um aumento...
 
 gostaria de relacionar com valor de verba recebida e idade do programa
 
