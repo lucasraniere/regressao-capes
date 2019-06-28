@@ -31,50 +31,40 @@ Criar um modelo de regressão linear multivariado para avaliar a produtividade (
 
 ```{r}
 cacc_tudo = read_projectdata()
-
-glimpse(cacc_tudo)
 ```
 
 ```{r}
 cacc = cacc_tudo %>%
   transmute(
+    nota_capes = Nível,
+    artigos_conf = `Artigos em conf`,
     docentes = `Docentes permanentes`,
     producao = (periodicos_A1 + periodicos_A2 + periodicos_B1),
+    producao_aluno = (per_comaluno_A1 + per_comaluno_A2 + per_comaluno_B1),
     produtividade = producao / docentes,
+    prop_paluno = producao_aluno/producao,
     mestrados = Dissertacoes,
     doutorados = Teses,
     tem_doutorado = tolower(`Tem doutorado`) == "sim",
     mestrados_pprof = mestrados / docentes,
     doutorados_pprof = doutorados / docentes
   )
-
-cacc_md = cacc %>% 
-  filter(tem_doutorado)
 ```
+
 
 ```{r}
-modelo2 = lm(produtividade ~ mestrados_pprof + doutorados_pprof + docentes, data = cacc)
-
-tidy(modelo2, conf.int = TRUE, conf.level = 0.95)
-glance(modelo2)
+skimr::skim(cacc)
 ```
-```{r}
-para_plotar_modelo = cacc %>% 
-  data_grid(produtividade = seq_range(produtividade, 10), # Crie um vetor de 10 valores no range
-            docentes = seq_range(docentes, 4),  
-            # mestrados = seq_range(mestrados, 3),
-            mestrados_pprof = median(mestrados_pprof),
-            doutorados_pprof = seq_range(doutorados_pprof, 3)) %>% 
-  add_predictions(modelo2)
 
-glimpse(para_plotar_modelo)
-```
+
 
 ```{r}
-para_plotar_modelo %>% 
-  ggplot(aes(x = docentes, y = pred)) + 
-  geom_line(aes(group = doutorados_pprof, colour = doutorados_pprof)) + 
-  geom_point(data = cacc, aes(y = produtividade, colour = doutorados_pprof))
+modelo = lm(produtividade ~ prop_paluno + nota_capes + artigos_conf, data = cacc)
+
+tidy(modelo, conf.int = TRUE, conf.level = 0.95)
+glance(modelo)
 ```
 
-> Regressão múltipla foi utilizada para analisar se VarIndep1 e VarIndep2 tem uma associação significativa com VarDep. Os resultados da regressão indicam que um modelo com os 2 preditores no formato VarDep = XXX.VarIndep1 + YYY.VarIndep2 explicam XX,XX% da variância da variável de resposta (R2 = XX,XX). VarIndep1, medida como/em [unidade ou o que é o 0 e o que é 1] tem uma relação significativa com o erro (b = [yy,yy; zz,zz], IC com 95%), assim como VarIndep2 medida como [unidade ou o que é o 0 e o que é 1] (b = [yy,yy; zz,zz], IC com 95%). O aumento de 1 unidade de VarIndep1 produz uma mudança de xxx em VarDep, enquanto um aumento...
+> Regressão múltipla foi utilizada para analisar se prop_paluno, nota_capes e artigos_conf tem uma associação significativa com produtividade. Os resultados da regressão indicam que um modelo com os 3 preditores no formato produtividade = -0,511.prop_paluno + 0,569.nota_capes + 0,002.artigos_conf explicam 57,04% da variância da variável de resposta (R2 = 0,57). VarIndep1, medida como/em [unidade ou o que é o 0 e o que é 1] tem uma relação significativa com o erro (b = [yy,yy; zz,zz], IC com 95%), assim como VarIndep2 medida como [unidade ou o que é o 0 e o que é 1] (b = [yy,yy; zz,zz], IC com 95%). O aumento de 1 unidade de VarIndep1 produz uma mudança de xxx em VarDep, enquanto um aumento...
+
+gostaria de relacionar com valor de verba recebida e idade do programa
