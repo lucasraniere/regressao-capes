@@ -1,10 +1,19 @@
 ---
 title: "Produtividade CAPES com regressão"
-author: "Lucas Raniére Juvino Santos"
-output: html_notebook
+author: "Lucas Raniere Juvino Santos"
+output:
+  html_document:
+    theme: readable
+    df_print: paged
+    toc: yes
+  html_notebook:
+    fig_width: 7
+    theme: readable
+    toc: yes
+    toc_float: yes
 ---
 
-```{r warning=FALSE, echo=FALSE}
+```{r warning=FALSE, echo=FALSE, message=FALSE}
 library(tidyverse)
 library(broom)
 library(modelr)
@@ -29,7 +38,7 @@ Criar um modelo de regressão linear multivariado para avaliar a produtividade (
 
 ## Dados
 
-```{r}
+```{r echo=FALSE, warning=FALSE}
 cacc_tudo = read_projectdata()
 ```
 
@@ -45,6 +54,7 @@ cacc = cacc_tudo %>%
     prop_paluno = producao_aluno/producao,
     mestrados = Dissertacoes,
     doutorados = Teses,
+    formados = (Teses + Dissertacoes),
     tem_doutorado = tolower(`Tem doutorado`) == "sim",
     mestrados_pprof = mestrados / docentes,
     doutorados_pprof = doutorados / docentes
@@ -59,23 +69,14 @@ skimr::skim(cacc)
 
 
 ```{r}
-modelo = lm(produtividade ~ prop_paluno +  artigos_conf, data = cacc)
+modelo = lm(produtividade ~ prop_paluno +  artigos_conf + formados, data = cacc)
 
 tidy(modelo, conf.int = TRUE, conf.level = 0.95)
 glance(modelo)
 ```
 
-> Regressão múltipla foi utilizada para analisar se prop_paluno, nota_capes e artigos_conf tem uma associação significativa com produtividade. Os resultados da regressão indicam que um modelo com os 3 preditores no formato produtividade = -0,511.prop_paluno + 0,569.nota_capes + 0,002.artigos_conf explicam 57,04% da variância da variável de resposta (R2 = 0,57). VarIndep1, medida como/em [unidade ou o que é o 0 e o que é 1] tem uma relação significativa com o VarDep (b = [yy,yy; zz,zz], IC com 95%), assim como VarIndep2 medida como [unidade ou o que é o 0 e o que é 1] (b = [yy,yy; zz,zz], IC com 95%). O aumento de 1 unidade de VarIndep1 produz uma mudança de xxx em VarDep, enquanto um aumento...
-
-gostaria de relacionar com valor de verba recebida e idade do programa
-
 ```{r}
-cacc %>%
-    ggplot(aes(x = produtividade, y = nota_capes, size = producao, color = doutorados)) +
-    geom_point()
-```
-
-```{r}
+#função que retorna a fórmula do modelo
 regEq <- function(lmObj, dig) {
     gsub(":", "*", 
         paste0(
@@ -92,4 +93,18 @@ regEq <- function(lmObj, dig) {
 
 regEq(modelo, 4)
 ```
+
+
+> Regressão múltipla foi utilizada para analisar se prop_paluno, artigos_conf, e formados tem uma associação significativa com produtividade. Os resultados da regressão indicam que um modelo com os 3 preditores no formato produtividade = 1,0464 + 0,4536.prop_paluno + 0,0058.artigos_conf - 0,0023.formados explicam 47,67% da variância da variável de resposta (R2 = 0,47). prop_palunos, medida como a proporção de alunos com publicação em relação às publicações, tem uma relação forte e positiva, ou até mesmo fraca e negativa com a produtividade (0,453 = [-0,98; 1,89], IC com 95%), artigos_conf, medida como a quantidade de artigos publicados em conferências, tem uma relação fraca e positiva com a produtividade (0,005 = [0,003; 0,008], IC com 95%), e por útltimo temos a variável formados, que é medida como a soma das teses e dissertações de cada programa, e apresenta uma relação fraca e negativa ou fraca e positiva com a produtividade (-0,0023 = [-0,007;0,002]). O aumento de 0,1 prop_aluno produz uma mudança de 0,045 em produtividade, enquanto um aumento de 0,1 em artigos_conf produz uma mudança de 0,0058, já o aumento de 0,1 unidade em formados produz uma mudança de -0,00023 em produtividade.
+
+> Com isso podemos concluir que das três variáveis escolhidas a que mais tem relação com a produtividade é a proporção de publicações com participações de alunos. Ao meu ver isso se deve ao fator de aproveitamento da capacidade de escrita dos alunos, o que não aproveitado quando apenas professores escrevem, além do fator número de alunos também, que é maior que o de professores. As outras duas variáveis eu admito que o resultado foi uma surpresa para mim, acreditava que o fator de artigos aceitos em conferências ia se relacionar mais com a produtividade. E também achei que quanto mais alunos formados (tanto no mestrado quanto no doutorado) mais publicações o programa teria, o que se mostrou não apenas errado, como obtive o resultado contrário, pois esse fator diminui a produtividade.
+
+
+```{r}
+modelo = lm(produtividade ~ formados, data = cacc)
+
+tidy(modelo, conf.int = TRUE, conf.level = 0.95)
+glance(modelo)
+```
+
 
